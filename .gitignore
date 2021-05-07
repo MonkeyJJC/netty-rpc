@@ -3,7 +3,9 @@
 !gradle/wrapper/gradle-wrapper.jar
 log/
 logs/
-gradle/
+/gradlew
+/gradlew.bat
+/gradle
 
 ### STS ###
 .apt_generated
