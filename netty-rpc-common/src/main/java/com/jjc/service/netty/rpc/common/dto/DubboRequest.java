@@ -1,5 +1,9 @@
 package com.jjc.service.netty.rpc.common.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -8,51 +12,15 @@ import java.util.Arrays;
  * @author: jjc
  * @createTime: 2021/5/6
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class DubboRequest implements Serializable {
     private static final long serialVersionUID = 8473698001818105266L;
     private Class<?> interfaceClass;
     private String methodName;
     private Class<?>[] paramTypes;
     private Object[] args;
-
-    public DubboRequest(Class<?> interfaceClass, String methodName, Class<?>[] paramTypes, Object[] args) {
-        this.interfaceClass = interfaceClass;
-        this.methodName = methodName;
-        this.paramTypes = paramTypes;
-        this.args = args;
-    }
-
-    public Class<?> getInterfaceClass() {
-        return interfaceClass;
-    }
-
-    public void setInterfaceClass(Class<?> interfaceClass) {
-        this.interfaceClass = interfaceClass;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
-    public Class<?>[] getParamTypes() {
-        return paramTypes;
-    }
-
-    public void setParamTypes(Class<?>[] paramTypes) {
-        this.paramTypes = paramTypes;
-    }
-
-    public Object[] getArgs() {
-        return args;
-    }
-
-    public void setArgs(Object[] args) {
-        this.args = args;
-    }
 
     @Override
     public String toString() {

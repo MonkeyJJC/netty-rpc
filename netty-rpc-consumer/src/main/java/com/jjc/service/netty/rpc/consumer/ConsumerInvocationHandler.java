@@ -76,6 +76,7 @@ public class ConsumerInvocationHandler implements InvocationHandler {
 
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
+            // 传输的对象必须实现序列化接口
             DubboRequest request = new DubboRequest(proxy.getClass().getInterfaces()[0], method.getName(), method.getParameterTypes(), args);
             ctx.writeAndFlush(request);
         }
