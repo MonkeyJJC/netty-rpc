@@ -1,0 +1,184 @@
+apply plugin: 'base'
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+apply plugin: 'findbugs'
+
+group = 'com.jjc.service'
+version = '1.0.0'
+sourceCompatibility = 1.8
+
+ext {
+    springBootVersion = '2.0.4.RELEASE'
+    springVersion = '5.0.1.RELEASE'
+    collectionVersion = '3.2.2'
+    commonsCodecVersion = '1.10'
+    commonsLangVersion = '3.4'
+    guavaVersion = '22.0'
+    jacksonVersion = '2.9.9'
+    jsonpathVersion = '2.2.0'
+    jmockitVersion = '1.24'
+    lombokVersion = '1.18.6'
+    log4j2Version = '1.2.17'
+    fastjsonVersion = '1.2.76'
+    mysqlConnectorVersion = '5.1.37'
+    log4jVersion = '2.1'
+    dubboVersion = '2.5.3'
+    nettyVersion = '4.1.24.Final'
+}
+
+buildscript {
+    ext {
+        springBootVersion = '2.0.4.RELEASE'
+        dependencyManagementPluginVersion = '0.6.1.RELEASE'
+    }
+    repositories {
+        mavenLocal()
+        maven {
+            name "aliyun"
+            url "https://maven.aliyun.com/repository/public"
+        }
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("io.spring.gradle:dependency-management-plugin:$dependencyManagementPluginVersion")
+    }
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact(sourcesJar) {
+                    classifier = 'sources'
+                }
+                pom.withXml {
+                    asNode().dependencies.dependency.each {
+                        dep ->
+                            if (dep.version.text() == "unspecified") {
+                                dep.getAt('groupId').get(0).setValue(project.group)
+                                dep.getAt('version').get(0).setValue(project.version)
+                            }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+subprojects {
+    apply plugin: 'idea'
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    version = parent.version
+    group = parent.group
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+    }
+
+    configurations {
+        all*.exclude group: "org.springframework.boot", module: "spring-boot-starter-logging"
+        all*.exclude group: "org.slf4j", module: "slf4j-log4j12"
+        all*.exclude group: "org.apache.logging.log4j", module: "log4j-1.2-api"
+    }
+
+    repositories {
+        mavenLocal()
+        maven { url "https://maven.aliyun.com/repository/public" }
+    }
+
+    sourceSets {
+        main {
+            resources {
+                srcDirs = ["src/main/resources/base", "src/main/resources"]
+            }
+        }
+        test {
+            resources {
+                srcDirs = ["src/test/resources/base", "src/test/resources"]
+            }
+        }
+    }
+
+    if (!it.name.endsWith('-contract')) {
+        dependencies {
+            compile "org.springframework.boot:spring-boot-starter:$springBootVersion"
+            compile "org.springframework.boot:spring-boot-starter-log4j2:$springBootVersion"
+            compile "org.springframework.boot:spring-boot-starter-web:$springBootVersion"
+            compile "org.springframework.boot:spring-boot-starter-aop:$springBootVersion"
+            compile "org.springframework:spring-aspects:$springVersion"
+            compile "com.alibaba:dubbo:$dubboVersion"
+            compile "com.google.guava:guava:$guavaVersion"
+            compile "commons-collections:commons-collections:$collectionVersion"
+            compile "commons-codec:commons-codec:$commonsCodecVersion"
+            compile "org.apache.commons:commons-lang3:$commonsLangVersion"
+            compile "log4j:log4j:$log4j2Version"
+            compile "com.alibaba:fastjson:$fastjsonVersion"
+            compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+            compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+            compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+            compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
+            compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
+            compile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
+            compile "io.netty:netty-all:$nettyVersion"
+
+            // db
+            compile "org.springframework:spring-jdbc:$springVersion"
+            compile "mysql:mysql-connector-java:$mysqlConnectorVersion"
+            compile "org.projectlombok:lombok:$lombokVersion"
+
+            testCompile "org.springframework.boot:spring-boot-starter-test:$springBootVersion"
+            testCompile "com.jayway.jsonpath:json-path:$jsonpathVersion"
+            testCompile "com.jayway.jsonpath:json-path-assert:$jsonpathVersion"
+            testCompile "org.jmockit:jmockit:$jmockitVersion"
+        }
+    }
+}
+
+project(":netty-rpc-provider") {
+    apply plugin: 'org.springframework.boot'
+    dependencies {
+        compile project(":netty-rpc-contract")
+        compile project(":netty-rpc-common")
+    }
+}
+
+project(":netty-rpc-contract") {
+    dependencies {
+        compile "org.projectlombok:lombok:$lombokVersion"
+        compile "com.fasterxml.jackson.core:jackson-core:$jacksonVersion"
+        compile "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+        compile "com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion"
+        compile "org.apache.commons:commons-lang3:$commonsLangVersion"
+    }
+}
+
+project(":netty-rpc-common") {
+    dependencies {
+
+    }
+}
+
+project(":netty-rpc-consumer") {
+    dependencies {
+        compile project(":netty-rpc-contract")
+        compile project(":netty-rpc-common")
+    }
+}
+
